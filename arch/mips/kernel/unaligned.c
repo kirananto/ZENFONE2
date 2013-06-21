@@ -1547,6 +1547,7 @@ sigill:
 	    ("Unhandled kernel unaligned access or invalid instruction", regs);
 	force_sig(SIGILL, current);
 }
+
 asmlinkage void do_ade(struct pt_regs *regs)
 {
 	unsigned int __user *pc;

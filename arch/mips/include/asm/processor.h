@@ -231,8 +231,8 @@ struct thread_struct {
 	unsigned long cp0_baduaddr;	/* Last kernel fault accessing USEG */
 	unsigned long error_code;
 #ifdef CONFIG_CPU_CAVIUM_OCTEON
-    struct octeon_cop2_state cp2 __attribute__ ((__aligned__(128)));
-    struct octeon_cvmseg_state cvmseg __attribute__ ((__aligned__(128)));
+	struct octeon_cop2_state cp2 __attribute__ ((__aligned__(128)));
+	struct octeon_cvmseg_state cvmseg __attribute__ ((__aligned__(128)));
 #endif
 	struct mips_abi *abi;
 };
