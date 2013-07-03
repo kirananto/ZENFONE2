@@ -590,18 +590,8 @@ void __init mem_init(void)
 			> BITS_PER_LONG);
 
 	high_memory = __va((max_pfn << PAGE_SHIFT));
-
-#ifndef CONFIG_DISCONTIGMEM
-	max_mapnr = page_to_pfn(virt_to_page(high_memory - 1)) + 1;
+	set_max_mapnr(page_to_pfn(virt_to_page(high_memory - 1)) + 1);
 	free_all_bootmem();
-#else
-	{
-		int i;
-
-		for (i = 0; i < npmem_ranges; i++)
-			free_all_bootmem_node(NODE_DATA(i));
-	}
-#endif
 
 	codesize = (unsigned long)_etext - (unsigned long)_text;
 	datasize = (unsigned long)_edata - (unsigned long)_etext;
