@@ -40,17 +40,16 @@ echo "                                        Compiling RaZorReborn for Zenfone 
 echo "                    "
 echo -e "**********************************************************************************************"
 make hd_defconfig
-make -j1
+make -j12
 if ! [ -a $KERN_IMG ];
 then
 echo -e "$red Kernel Compilation failed! Fix the errors! $nocol"
 exit 1
 fi
-$DTBTOOL -2 -o $KERNEL_DIR/arch/arm64/boot/dt.img -s 2048 -p $KERNEL_DIR/scripts/dtc/ $KERNEL_DIR/arch/arm/boot/dts/
 }
 case $1 in
 clean)
-make ARCH=arm64 -j8 clean mrproper
+make ARCH=x86 -j8 clean mrproper
 rm -rf $KERNEL_DIR/arch/arm/boot/dt.img
 ;;
 *)
@@ -60,6 +59,8 @@ esac
 rm $MODULES_DIR/../ZFOutput/tools/bzImage
 cp $KERNEL_DIR/arch/x86/boot/bzImage  $MODULES_DIR/../ZFOutput/tools
 cd $MODULES_DIR/../ZFOutput
+zipfile="RRV1.0ZF2-$(date +"%Y-%m-%d(%I.%M%p)").zip"
+zip -r $zipfile tools META-INF -x *kernel/.gitignore*
 BUILD_END=$(date +"%s")
 DIFF=$(($BUILD_END - $BUILD_START))
 echo -e "$yellow Build completed in $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) seconds.$nocol"
