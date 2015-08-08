@@ -40,7 +40,6 @@
 #include <linux/pm_qos.h>
 
 #define CREATE_TRACE_POINTS
-#include "mfd.h"
 
 static int hsu_dma_enable = 0xff;
 module_param(hsu_dma_enable, int, 0);
