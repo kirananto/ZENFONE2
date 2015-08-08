@@ -1,3 +1,8 @@
+#undef TRACE_INCLUDE_PATH
+#undef TRACE_INCLUDE_FILE
+#define TRACE_INCLUDE_PATH .
+#define TRACE_INCLUDE_FILE mfd_trace
+
 #define TRACE_SYSTEM hsu
 
 #if !defined(_TRACE_HSU_H) || defined(TRACE_HEADER_MULTI_READ)
@@ -189,3 +194,4 @@ TRACE_EVENT(hsu_set_termios,
 #endif /* if !defined(_TRACE_HSU_H) || defined(TRACE_HEADER_MULTI_READ) */
 
 /* This part must be outside protection */
+#include <trace/define_trace.h>
