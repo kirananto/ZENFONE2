@@ -15,7 +15,7 @@
  # Please maintain this if you use this script or any part of it
  #
 KERNEL_DIR=$PWD
-KERN_IMG=$KERNEL_DIR/arch/arm64/boot/Image
+KERN_IMG=$KERNEL_DIR/arch/x86/boot/bzImage
 DTBTOOL=$KERNEL_DIR/tools/dtbToolCM
 BUILD_START=$(date +"%s")
 blue='\033[0;34m'
@@ -36,7 +36,7 @@ compile_kernel ()
 {
 echo -e "**********************************************************************************************"
 echo "                    "
-echo "                                        Compiling RaZorReborn kernel                    "
+echo "                                        Compiling RaZorReborn for Zenfone 2                   "
 echo "                    "
 echo -e "**********************************************************************************************"
 make hd_defconfig
@@ -57,12 +57,10 @@ rm -rf $KERNEL_DIR/arch/arm/boot/dt.img
 compile_kernel
 ;;
 esac
-rm $MODULES_DIR/../FerrariOutput/tools/Image
-rm $MODULES_DIR/../FerrariOutput/tools/dt.img
-cp $KERNEL_DIR/arch/arm64/boot/Image  $MODULES_DIR/../FerrariOutput/tools
-cp $KERNEL_DIR/arch/arm64/boot/dt.img  $MODULES_DIR/../FerrariOutput/tools
-cd $MODULES_DIR/../FerrariOutput
+rm $MODULES_DIR/../ZFOutput/tools/bzImage
+cp $KERNEL_DIR/arch/x86/boot/bzImage  $MODULES_DIR/../ZFOutput/tools
+cd $MODULES_DIR/../ZFOutput
 BUILD_END=$(date +"%s")
 DIFF=$(($BUILD_END - $BUILD_START))
 echo -e "$yellow Build completed in $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) seconds.$nocol"
-echo "Enjoy RazorKernel for Ferrari"
+echo "Enjoy RazorKernel for Zenfone 2"
