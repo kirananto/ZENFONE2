@@ -16,6 +16,7 @@
 #include <linux/errno.h>
 #include <linux/platform_device.h>
 #include <linux/input.h>
+#include <linux/device.h>
 #include <linux/slab.h>
 #include <linux/mfd/pm8xxx/core.h>
 
@@ -229,7 +230,7 @@ static int pm8xxx_vib_probe(struct platform_device *pdev)
 		dev_err(&pdev->dev, "couldn't register input device\n");
 		goto err_destroy_memless;
 	}
-
+	device_create_file(vib->timed_dev.dev, &dev_attr_vtg_level);
 	platform_set_drvdata(pdev, vib);
 	return 0;
 
@@ -268,6 +269,59 @@ static int pm8xxx_vib_suspend(struct device *dev)
 
 static SIMPLE_DEV_PM_OPS(pm8xxx_vib_pm_ops, pm8xxx_vib_suspend, NULL);
 
+static ssize_t pm8xxx_vib_level_show(struct device *dev,
+					struct device_attribute *attr,
+					char *buf)
+{
+	struct timed_output_dev *tdev = dev_get_drvdata(dev);
+	struct pm8xxx_vib *vib = container_of(tdev, struct pm8xxx_vib,
+					 timed_dev);
+
+	return scnprintf(buf, PAGE_SIZE, "%d\n", vib->vtg_level);
+}
+
+
+static ssize_t pm8xxx_vib_level_store(struct device *dev,
+					struct device_attribute *attr,
+					const char *buf, size_t count)
+{
+	struct timed_output_dev *tdev = dev_get_drvdata(dev);
+	struct pm8xxx_vib *vib = container_of(tdev, struct pm8xxx_vib,
+					 timed_dev);
+	int val;
+	int rc;
+	u8 reg = 0;
+
+	rc = kstrtoint(buf, 10, &val);
+	if (rc) {
+		pr_err("%s: error getting level\n", __func__);
+		return -EINVAL;
+	}
+
+	if (val < pm8xxx_VIB_MIN_LEVEL) {
+		pr_err("%s: level %d not in range (%d - %d), using min.", _func__, val, pm8xxx_VIB_MIN_LEVEL, pm8xxx_VIB_MAX_LEVEL);
+		val = pm8xxx_VIB_MIN_LEVEL;
+	} else if (val > pm8xxx_VIB_MAX_LEVEL) {
+		pr_err("%s: level %d not in range (%d - %d), using max.", _func__, val, pm8xxx_VIB_MIN_LEVEL, pm8xxx_VIB_MAX_LEVEL);
+		val = pm8xxx_VIB_MAX_LEVEL;
+	}
+
+	vib->vtg_level = val;
+
+	/* Configure the VTG CTL regiser */
+	rc = pm8xxx_vib_read_u8(vib, &reg, pm8xxx_VIB_VTG_CTL(vib->base));
+	if (rc < 0) {
+		pr_info("pm8xxx: error while reading vibration control register\n");
+		}
+	reg &= ~pm8xxx_VIB_VTG_SET_MASK;
+	reg |= (vib->vtg_level & pm8xxx_VIB_VTG_SET_MASK);
+	rc = pm8xxx_vib_write_u8(vib, &reg, pm8xxx_VIB_VTG_CTL(vib->base));
+	if (rc)
+		pr_info("pm8xxx: error while writing vibration control register\n");
+
+	return strnlen(buf, count);
+}
+static DEVICE_ATTR(vtg_level, S_IRUGO | S_IWUSR, pm8xxx_vib_level_show, pm8xxx_vib_level_store);
 static struct platform_driver pm8xxx_vib_driver = {
 	.probe		= pm8xxx_vib_probe,
 	.remove		= pm8xxx_vib_remove,
