@@ -274,6 +274,7 @@ static struct cpufreq_driver elanfreq_driver = {
 	.init		= elanfreq_cpu_init,
 	.exit		= elanfreq_cpu_exit,
 	.name		= "elanfreq",
+	.owner		= THIS_MODULE,
 	.attr		= elanfreq_attr,
 };
 

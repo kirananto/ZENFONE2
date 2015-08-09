@@ -71,7 +71,7 @@ static void sc520_freq_set_cpu_state(struct cpufreq_policy *policy,
 	local_irq_disable();
 
 	clockspeed_reg = *cpuctl & ~0x03;
-	*cpuctl = clockspeed_reg | sc520_freq_table[state].driver_data;
+	*cpuctl = clockspeed_reg | sc520_freq_table[state].index;
 
 	local_irq_enable();
 
@@ -147,6 +147,7 @@ static struct cpufreq_driver sc520_freq_driver = {
 	.init	= sc520_freq_cpu_init,
 	.exit	= sc520_freq_cpu_exit,
 	.name	= "sc520_freq",
+	.owner	= THIS_MODULE,
 	.attr	= sc520_freq_attr,
 };
 

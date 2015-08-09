@@ -12,7 +12,7 @@
 #include <linux/err.h>
 #include <linux/module.h>
 #include <linux/of.h>
-#include <linux/pm_opp.h>
+#include <linux/opp.h>
 #include <linux/platform_device.h>
 #include <linux/regulator/consumer.h>
 
@@ -71,14 +71,14 @@ static int imx6q_set_target(struct cpufreq_policy *policy,
 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
 
 	rcu_read_lock();
-	opp = dev_pm_opp_find_freq_ceil(cpu_dev, &freq_hz);
+	opp = opp_find_freq_ceil(cpu_dev, &freq_hz);
 	if (IS_ERR(opp)) {
 		rcu_read_unlock();
 		dev_err(cpu_dev, "failed to find OPP for %ld\n", freq_hz);
 		return PTR_ERR(opp);
 	}
 
-	volt = dev_pm_opp_get_voltage(opp);
+	volt = opp_get_voltage(opp);
 	rcu_read_unlock();
 	volt_old = regulator_get_voltage(arm_reg);
 
@@ -246,14 +246,14 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
 	}
 
 	/* We expect an OPP table supplied by platform */
-	num = dev_pm_opp_get_opp_count(cpu_dev);
+	num = opp_get_opp_count(cpu_dev);
 	if (num < 0) {
 		ret = num;
 		dev_err(cpu_dev, "no OPP table is found: %d\n", ret);
 		goto put_node;
 	}
 
-	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
+	ret = opp_init_cpufreq_table(cpu_dev, &freq_table);
 	if (ret) {
 		dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
 		goto put_node;
@@ -268,12 +268,12 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
 	 * same order.
 	 */
 	rcu_read_lock();
-	opp = dev_pm_opp_find_freq_exact(cpu_dev,
+	opp = opp_find_freq_exact(cpu_dev,
 				  freq_table[0].frequency * 1000, true);
-	min_volt = dev_pm_opp_get_voltage(opp);
-	opp = dev_pm_opp_find_freq_exact(cpu_dev,
+	min_volt = opp_get_voltage(opp);
+	opp = opp_find_freq_exact(cpu_dev,
 				  freq_table[--num].frequency * 1000, true);
-	max_volt = dev_pm_opp_get_voltage(opp);
+	max_volt = opp_get_voltage(opp);
 	rcu_read_unlock();
 	ret = regulator_set_voltage_time(arm_reg, min_volt, max_volt);
 	if (ret > 0)
@@ -301,7 +301,7 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
 	return 0;
 
 free_freq_table:
-	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
+	opp_free_cpufreq_table(cpu_dev, &freq_table);
 put_node:
 	of_node_put(np);
 	return ret;
@@ -310,7 +310,7 @@ put_node:
 static int imx6q_cpufreq_remove(struct platform_device *pdev)
 {
 	cpufreq_unregister_driver(&imx6q_cpufreq_driver);
-	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
+	opp_free_cpufreq_table(cpu_dev, &freq_table);
 
 	return 0;
 }

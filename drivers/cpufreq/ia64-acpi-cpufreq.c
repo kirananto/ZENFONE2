@@ -141,6 +141,7 @@ processor_set_freq (
 {
 	int			ret = 0;
 	u32			value = 0;
+	struct cpufreq_freqs    cpufreq_freqs;
 	cpumask_t		saved_mask;
 	int			retval;
 
@@ -167,6 +168,13 @@ processor_set_freq (
 	pr_debug("Transitioning from P%d to P%d\n",
 		data->acpi_data.state, state);
 
+	/* cpufreq frequency struct */
+	cpufreq_freqs.old = data->freq_table[data->acpi_data.state].frequency;
+	cpufreq_freqs.new = data->freq_table[state].frequency;
+
+	/* notify cpufreq */
+	cpufreq_notify_transition(policy, &cpufreq_freqs, CPUFREQ_PRECHANGE);
+
 	/*
 	 * First we write the target state's 'control' value to the
 	 * control_register.
@@ -178,10 +186,21 @@ processor_set_freq (
 
 	ret = processor_set_pstate(value);
 	if (ret) {
+		unsigned int tmp = cpufreq_freqs.new;
+		cpufreq_notify_transition(policy, &cpufreq_freqs,
+				CPUFREQ_POSTCHANGE);
+		cpufreq_freqs.new = cpufreq_freqs.old;
+		cpufreq_freqs.old = tmp;
+		cpufreq_notify_transition(policy, &cpufreq_freqs,
+				CPUFREQ_PRECHANGE);
+		cpufreq_notify_transition(policy, &cpufreq_freqs,
+				CPUFREQ_POSTCHANGE);
 		printk(KERN_WARNING "Transition failed with error %d\n", ret);
 		retval = -ENODEV;
 		goto migrate_end;
 	}
+
+	cpufreq_notify_transition(policy, &cpufreq_freqs, CPUFREQ_POSTCHANGE);
 
 	data->acpi_data.state = state;
 
@@ -255,7 +274,7 @@ acpi_cpufreq_cpu_init (
 
 	pr_debug("acpi_cpufreq_cpu_init\n");
 
-	data = kzalloc(sizeof(*data), GFP_KERNEL);
+	data = kzalloc(sizeof(struct cpufreq_acpi_io), GFP_KERNEL);
 	if (!data)
 		return (-ENOMEM);
 
@@ -285,7 +304,7 @@ acpi_cpufreq_cpu_init (
 	}
 
 	/* alloc freq_table */
-	data->freq_table = kmalloc(sizeof(*data->freq_table) *
+	data->freq_table = kmalloc(sizeof(struct cpufreq_frequency_table) *
 	                           (data->acpi_data.state_count + 1),
 	                           GFP_KERNEL);
 	if (!data->freq_table) {
@@ -307,7 +326,7 @@ acpi_cpufreq_cpu_init (
 	/* table init */
 	for (i = 0; i <= data->acpi_data.state_count; i++)
 	{
-		data->freq_table[i].driver_data = i;
+		data->freq_table[i].index = i;
 		if (i < data->acpi_data.state_count) {
 			data->freq_table[i].frequency =
 			      data->acpi_data.states[i].core_frequency * 1000;
@@ -390,6 +409,7 @@ static struct cpufreq_driver acpi_cpufreq_driver = {
 	.init		= acpi_cpufreq_cpu_init,
 	.exit		= acpi_cpufreq_cpu_exit,
 	.name		= "acpi-cpufreq",
+	.owner		= THIS_MODULE,
 	.attr           = acpi_cpufreq_attr,
 };
 

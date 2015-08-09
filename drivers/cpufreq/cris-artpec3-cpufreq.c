@@ -111,6 +111,7 @@ static struct cpufreq_driver cris_freq_driver = {
 	.init	= cris_freq_cpu_init,
 	.exit	= cris_freq_cpu_exit,
 	.name	= "cris_freq",
+	.owner	= THIS_MODULE,
 	.attr	= cris_freq_attr,
 };
 

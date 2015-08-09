@@ -19,12 +19,13 @@
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
+#include <linux/cpu.h>
 #include <linux/cpufreq.h>
 #include <linux/device.h>
 #include <linux/export.h>
 #include <linux/module.h>
-#include <linux/of_device.h>
-#include <linux/pm_opp.h>
+#include <linux/of.h>
+#include <linux/opp.h>
 #include <linux/platform_device.h>
 #include <linux/slab.h>
 #include <linux/types.h>
@@ -33,13 +34,27 @@
 /* get cpu node with valid operating-points */
 static struct device_node *get_cpu_node_with_valid_op(int cpu)
 {
-	struct device_node *np = of_cpu_device_node_get(cpu);
+	struct device_node *np = NULL, *parent;
+	int count = 0;
 
-	if (!of_get_property(np, "operating-points", NULL)) {
-		of_node_put(np);
-		np = NULL;
+	parent = of_find_node_by_path("/cpus");
+	if (!parent) {
+		pr_err("failed to find OF /cpus\n");
+		return NULL;
 	}
 
+	for_each_child_of_node(parent, np) {
+		if (count++ != cpu)
+			continue;
+		if (!of_get_property(np, "operating-points", NULL)) {
+			of_node_put(np);
+			np = NULL;
+		}
+
+		break;
+	}
+
+	of_node_put(parent);
 	return np;
 }
 
@@ -48,12 +63,11 @@ static int dt_init_opp_table(struct device *cpu_dev)
 	struct device_node *np;
 	int ret;
 
-	np = of_node_get(cpu_dev->of_node);
-	if (!np) {
-		pr_err("failed to find cpu%d node\n", cpu_dev->id);
-		return -ENOENT;
-	}
+	np = get_cpu_node_with_valid_op(cpu_dev->id);
+	if (!np)
+		return -ENODATA;
 
+	cpu_dev->of_node = np;
 	ret = of_init_opp_table(cpu_dev);
 	of_node_put(np);
 
@@ -65,11 +79,9 @@ static int dt_get_transition_latency(struct device *cpu_dev)
 	struct device_node *np;
 	u32 transition_latency = CPUFREQ_ETERNAL;
 
-	np = of_node_get(cpu_dev->of_node);
-	if (!np) {
-		pr_info("Failed to find cpu node. Use CPUFREQ_ETERNAL transition latency\n");
+	np = get_cpu_node_with_valid_op(cpu_dev->id);
+	if (!np)
 		return CPUFREQ_ETERNAL;
-	}
 
 	of_property_read_u32(np, "clock-latency", &transition_latency);
 	of_node_put(np);
