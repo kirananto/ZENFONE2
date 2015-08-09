@@ -64,4 +64,7 @@ zip -r $zipfile tools META-INF -x *kernel/.gitignore*
 BUILD_END=$(date +"%s")
 DIFF=$(($BUILD_END - $BUILD_START))
 echo -e "$yellow Build completed in $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) seconds.$nocol"
+echo -e "$green Uploading "
+dropbox_uploader -p upload $MODULES_DIR/../ZFOutput/$zipfile /
+dropbox_uploader share /$zipfile
 echo "Enjoy RazorKernel for Zenfone 2"
