@@ -40,7 +40,7 @@ echo "                                        Compiling RaZorReborn for Zenfone 
 echo "                    "
 echo -e "**********************************************************************************************"
 make hd_defconfig
-make -j2
+make -j12
 if ! [ -a $KERN_IMG ];
 then
 echo -e "$red Kernel Compilation failed! Fix the errors! $nocol"
