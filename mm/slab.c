@@ -4431,10 +4431,20 @@ static int leaks_show(struct seq_file *m, void *p)
 	return 0;
 }
 
+static void *s_next(struct seq_file *m, void *p, loff_t *pos)
+{
+	return seq_list_next(p, &slab_caches, pos);
+}
+
+static void s_stop(struct seq_file *m, void *p)
+{
+	mutex_unlock(&slab_mutex);
+}
+
 static const struct seq_operations slabstats_op = {
 	.start = leaks_start,
-	.next = slab_next,
-	.stop = slab_stop,
+	.next = s_next,
+	.stop = s_stop,
 	.show = leaks_show,
 };
 

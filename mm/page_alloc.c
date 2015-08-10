@@ -79,7 +79,6 @@ EXPORT_PER_CPU_SYMBOL(numa_node);
  */
 DEFINE_PER_CPU(int, _numa_mem_);		/* Kernel "local memory" node */
 EXPORT_PER_CPU_SYMBOL(_numa_mem_);
-int _node_numa_mem_[MAX_NUMNODES];
 #endif
 
 /*
@@ -202,7 +201,7 @@ static char * const zone_names[MAX_NR_ZONES] = {
  * allocations below this point, only high priority ones. Automatically
  * tuned according to the amount of memory in the system.
  */
-int min_free_kbytes = 16384;
+int min_free_kbytes = 1024;
 int min_free_order_shift = 1;
 
 /*
@@ -1842,6 +1841,8 @@ static void __paginginit init_zone_allows_reclaim(int nid)
 	for_each_online_node(i)
 		if (node_distance(nid, i) <= RECLAIM_DISTANCE)
 			node_set(i, NODE_DATA(nid)->reclaim_nodes);
+		else
+			zone_reclaim_mode = 1;
 }
 
 #else	/* CONFIG_NUMA */
@@ -4232,7 +4233,7 @@ int __meminit init_currently_empty_zone(struct zone *zone,
 int __meminit __early_pfn_to_nid(unsigned long pfn)
 {
 	unsigned long start_pfn, end_pfn;
-	int nid;
+	int i, nid;
 	/*
 	 * NOTE: The following SMP-unsafe globals are only used early in boot
 	 * when the kernel is running single-threaded.
@@ -4243,14 +4244,15 @@ int __meminit __early_pfn_to_nid(unsigned long pfn)
 	if (last_start_pfn <= pfn && pfn < last_end_pfn)
 		return last_nid;
 
-	nid = memblock_search_pfn_nid(pfn, &start_pfn, &end_pfn);
-	if (nid != -1) {
-		last_start_pfn = start_pfn;
-		last_end_pfn = end_pfn;
-		last_nid = nid;
-	}
-
-	return nid;
+	for_each_mem_pfn_range(i, MAX_NUMNODES, &start_pfn, &end_pfn, &nid)
+		if (start_pfn <= pfn && pfn < end_pfn) {
+			last_start_pfn = start_pfn;
+			last_end_pfn = end_pfn;
+			last_nid = nid;
+			return nid;
+		}
+	/* This is a memory hole */
+	return -1;
 }
 #endif /* CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID */
 
