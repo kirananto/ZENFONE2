@@ -58,8 +58,7 @@ int arch_update_cpu_topology(void);
 /*
  * If the distance between nodes in a system is larger than RECLAIM_DISTANCE
  * (in whatever arch specific measurement units returned by node_distance())
- * and zone_reclaim_mode is enabled then the VM will only call zone_reclaim()
- * on nodes within this distance.
+ * then switch on zone reclaim on boot.
  */
 #define RECLAIM_DISTANCE 30
 #endif
@@ -100,7 +99,7 @@ int arch_update_cpu_topology(void);
 #define SD_SIBLING_INIT (struct sched_domain) {				\
 	.min_interval		= 1,					\
 	.max_interval		= 2,					\
-	.busy_factor		= 64,					\
+	.busy_factor		= 1,					\
 	.imbalance_pct		= 110,					\
 									\
 	.flags			= 1*SD_LOAD_BALANCE			\
@@ -245,20 +244,11 @@ static inline int numa_node_id(void)
  * Use the accessor functions set_numa_mem(), numa_mem_id() and cpu_to_mem().
  */
 DECLARE_PER_CPU(int, _numa_mem_);
-extern int _node_numa_mem_[MAX_NUMNODES];
 
 #ifndef set_numa_mem
 static inline void set_numa_mem(int node)
 {
 	this_cpu_write(_numa_mem_, node);
-	_node_numa_mem_[numa_node_id()] = node;
-}
-#endif
-
-#ifndef node_to_mem_node
-static inline int node_to_mem_node(int node)
-{
-	return _node_numa_mem_[node];
 }
 #endif
 
@@ -281,7 +271,6 @@ static inline int cpu_to_mem(int cpu)
 static inline void set_cpu_numa_mem(int cpu, int node)
 {
 	per_cpu(_numa_mem_, cpu) = node;
-	_node_numa_mem_[cpu_to_node(cpu)] = node;
 }
 #endif
 
@@ -292,13 +281,6 @@ static inline void set_cpu_numa_mem(int cpu, int node)
 static inline int numa_mem_id(void)
 {
 	return numa_node_id();
-}
-#endif
-
-#ifndef node_to_mem_node
-static inline int node_to_mem_node(int node)
-{
-	return node;
 }
 #endif
 
