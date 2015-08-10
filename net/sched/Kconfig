@@ -97,6 +97,11 @@ config NET_SCH_ATM
 	  To compile this code as a module, choose M here: the
 	  module will be called sch_atm.
 
+config NET_SCH_CAKE
+	tristate "CAKE"
+	---help---
+	  Say Y here
+
 config NET_SCH_PRIO
 	tristate "Multi Band Priority Queueing (PRIO)"
 	---help---
@@ -271,6 +276,47 @@ config NET_SCH_FQ_CODEL
 	  will be called sch_fq_codel.
 
 	  If unsure, say N.
+
+config NET_SCH_FQ
+	tristate "Fair Queue"
+	help
+	  Say Y here if you want to use the FQ packet scheduling algorithm.
+
+	  FQ does flow separation, and is able to respect pacing requirements
+	  set by TCP stack into sk->sk_pacing_rate (for localy generated
+	  traffic)
+
+	  To compile this driver as a module, choose M here: the module
+	  will be called sch_fq.
+
+	  If unsure, say N.
+
+config NET_SCH_HHF
+	tristate "Heavy-Hitter Filter (HHF)"
+	help
+	  Say Y here if you want to use the Heavy-Hitter Filter (HHF)
+	  packet scheduling algorithm.
+
+	  To compile this driver as a module, choose M here: the module
+	  will be called sch_hhf.
+
+config NET_SCH_PIE
+	tristate "Proportional Integral controller Enhanced (PIE) scheduler"
+	help
+	  Say Y here if you want to use the Proportional Integral controller
+	  Enhanced scheduler packet scheduling algorithm.
+	  For more information, please see
+	  http://tools.ietf.org/html/draft-pan-tsvwg-pie-00
+
+	  To compile this driver as a module, choose M here: the module
+	  will be called sch_pie.
+
+	  If unsure, say N.
+
+config NET_SCH_FQ_PIE
+	tristate "FQ_PIE"
+	---help---
+	  Say Y here
 
 config NET_SCH_INGRESS
 	tristate "Ingress Qdisc"

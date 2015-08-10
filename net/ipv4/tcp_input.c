@@ -2571,6 +2571,7 @@ void tcp_enter_cwr(struct sock *sk, const int set_ssthresh)
 		tcp_set_ca_state(sk, TCP_CA_CWR);
 	}
 }
+EXPORT_SYMBOL(tcp_enter_cwr);
 
 static void tcp_try_keep_open(struct sock *sk)
 {

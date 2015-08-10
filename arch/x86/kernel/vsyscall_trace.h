@@ -6,6 +6,7 @@
 
 #include <linux/tracepoint.h>
 
+
 TRACE_EVENT(emulate_vsyscall,
 
 	    TP_PROTO(int nr),
@@ -27,3 +28,4 @@ TRACE_EVENT(emulate_vsyscall,
 #define TRACE_INCLUDE_PATH ../../arch/x86/kernel
 #define TRACE_INCLUDE_FILE vsyscall_trace
 #include <trace/define_trace.h>
+

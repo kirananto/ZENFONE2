@@ -65,3 +65,5 @@ obj-$(CONFIG_GOLDFISH)		+= goldfish/
 obj-$(CONFIG_USB_DWC2)		+= dwc2/
 obj-$(CONFIG_INTEL_NORTHPEAK)   += npk/
 obj-$(CONFIG_SVENTX)            += sventx/
+obj-$(CONFIG_FRANDOM)       += frandom/
+obj-$(CONFIG_VNSWAP)		+= vnswap/
