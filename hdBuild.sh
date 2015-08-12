@@ -36,11 +36,11 @@ compile_kernel ()
 {
 echo -e "**********************************************************************************************"
 echo "                    "
-echo "                                        Compiling RaZorReborn for Zenfone 2                   "
+echo "                                        Compiling RaZorReborn for Zenfone 2  HD BUILD                  "
 echo "                    "
 echo -e "**********************************************************************************************"
 make hd_defconfig
-make -j2
+make -j12
 if ! [ -a $KERN_IMG ];
 then
 echo -e "$red Kernel Compilation failed! Fix the errors! $nocol"
@@ -59,12 +59,12 @@ esac
 rm $MODULES_DIR/../ZF2OUTPUT/tools/bzImage
 cp $KERNEL_DIR/arch/x86/boot/bzImage  $MODULES_DIR/../ZF2OUTPUT/
 cd $MODULES_DIR/../ZF2OUTPUT
-zipfile="RRV1.0ZF2-$(date +"%Y-%m-%d(%I.%M%p)").zip"
-zip -r $zipfile * -x *kernel/.gitignore*
+zipfile="RRV1.0ZF2HDBUILD-$(date +"%Y-%m-%d(%I.%M%p)").zip"
+zip -r $zipfile * -x *.zip
 BUILD_END=$(date +"%s")
 DIFF=$(($BUILD_END - $BUILD_START))
 echo -e "$yellow Build completed in $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) seconds.$nocol"
 echo -e "$green Uploading "
 dropbox_uploader -p upload $MODULES_DIR/../ZF2OUTPUT/$zipfile /
 dropbox_uploader share /$zipfile
-echo "Enjoy RazorKernel for Zenfone 2"
+echo "Enjoy RazorKernel for Zenfone 2 HD BUILD"

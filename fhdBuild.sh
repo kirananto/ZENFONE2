@@ -36,7 +36,7 @@ compile_kernel ()
 {
 echo -e "**********************************************************************************************"
 echo "                    "
-echo "                                        Compiling RaZorReborn for Zenfone 2                   "
+echo "                                        Compiling RaZorReborn for Zenfone 2 FULL HD BUILD                  "
 echo "                    "
 echo -e "**********************************************************************************************"
 make fhd_defconfig
@@ -56,15 +56,15 @@ rm -rf $KERNEL_DIR/arch/arm/boot/dt.img
 compile_kernel
 ;;
 esac
-rm $MODULES_DIR/../ZFOutput/tools/bzImage
-cp $KERNEL_DIR/arch/x86/boot/bzImage  $MODULES_DIR/../ZFOutput/tools
-cd $MODULES_DIR/../ZFOutput
-zipfile="RRV1.0ZF2-$(date +"%Y-%m-%d(%I.%M%p)").zip"
-zip -r $zipfile tools META-INF -x *kernel/.gitignore*
+rm $MODULES_DIR/../ZF2OUTPUT/tools/bzImage
+cp $KERNEL_DIR/arch/x86/boot/bzImage  $MODULES_DIR/../ZF2OUTPUT/
+cd $MODULES_DIR/../ZF2OUTPUT
+zipfile="RRV1.0ZF2FULLHDBUILD-$(date +"%Y-%m-%d(%I.%M%p)").zip"
+zip -r $zipfile * -x *.zip
 BUILD_END=$(date +"%s")
 DIFF=$(($BUILD_END - $BUILD_START))
 echo -e "$yellow Build completed in $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) seconds.$nocol"
 echo -e "$green Uploading "
-dropbox_uploader -p upload $MODULES_DIR/../ZFOutput/$zipfile /
+dropbox_uploader -p upload $MODULES_DIR/../ZF2OUTPUT/$zipfile /
 dropbox_uploader share /$zipfile
-echo "Enjoy RazorKernel for Zenfone 2"
+echo "Enjoy RazorKernel for Zenfone 2 HD BUILD"
